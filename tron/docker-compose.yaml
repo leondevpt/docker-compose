@@ -1,0 +1,38 @@
+version: '3'
+services:
+  tron-node:
+    build:
+      context: ./build
+      # these are available on build
+      args:
+        TRON_VERSION: $TRON_VERSION
+    # these are available on run
+    environment:
+      TRON_VERSION: $TRON_VERSION
+    image: java-tron:$TRON_VERSION
+    container_name: java-tron
+    restart: always
+    volumes:
+        - ./data/output-directory:/app/output-directory
+        - ./logs:/app/logs
+    ports:
+        - "18888:18888"
+        - "8090:8090"
+        - "8091:8091"
+        - "5555:5555"
+        - "50051:50051"
+    working_dir: /app
+    command: java -Xmx24g -XX:+UseConcMarkSweepGC -jar FullNode.jar -c main_net_config.conf
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
