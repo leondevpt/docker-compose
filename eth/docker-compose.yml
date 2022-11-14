@@ -1,0 +1,68 @@
+version: '3'
+services:
+  geth:
+    container_name: geth
+    image: ethereum/client-go:v1.10.26  #geth:latest
+    volumes:
+        - ./geth_data:/datadir
+    ports:
+        - "8545:8545" # RPC
+        - "8551:8551" # RPC
+        - "30303:30303" # Peers (TCP)
+        - "30303:30303/udp" # Peers (UDP)
+    restart: always
+    command:
+        - --syncmode=snap
+        - --datadir=/datadir
+        - --http
+        - --http.addr=0.0.0.0
+        - --http.port=8545
+        - --http.api=eth,net,web3,admin,engine,txpool
+        - --http.corsdomain=*
+        - --http.vhosts=*
+        - --ws
+        - --ws.addr=0.0.0.0
+        - --ws.port=8545
+        - --ws.api=eth,net,web3,admin
+        - --ws.origins=*
+        - --nousb
+        - --maxpeers=200
+        - --maxpendpeers=100
+        - --metrics
+        - --cache=8192
+        - --rpc.allow-unprotected-txs
+        - --authrpc.addr=0.0.0.0
+        - --authrpc.port=8551
+        - --authrpc.vhosts=*
+        - --authrpc.jwtsecret=/datadir/geth/jwtsecret
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  prysm:
+    container_name: beacon-chain
+    image: prysm:3.0.0  
+    volumes:
+        - ./prysm_data:/datadir
+        - ./geth_data/geth/jwtsecret:/datadir/geth/jwtsecret
+    ports:
+        - "4000:4000" # RPC
+        - "13000:13000" # RPC
+        - "12000:12000" # Peers (TCP)
+        - "12000:12000/udp" # Peers (UDP)
+    restart: always
+    command:
+        - --datadir=/datadir
+        - --rpc-host=0.0.0.0
+        - --monitoring-host=0.0.0.0
+        - --execution-endpoint=geth:8551 
+        - --jwt-secret=/datadir/geth/jwtsecret
+        - --accept-terms-of-use
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+

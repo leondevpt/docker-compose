@@ -1,0 +1,38 @@
+version: '3'
+  
+services:
+  etc:
+    container_name: etc
+    image: core-geth:1.12.7-stable
+    volumes:
+        - ./data/:/datadir
+    ports:
+        - "38545:8545" # RPC
+        - "30303:30303" # Peers (TCP)
+        - "30303:30303/udp" # Peers (UDP)
+    restart: always
+    command:
+        - --classic
+        - --datadir=/datadir
+        - --http
+        - --http.addr=0.0.0.0
+        - --http.port=8545
+        - --http.api=eth,net,web3,txpool
+        - --http.corsdomain=*
+        - --http.vhosts=*
+        - --ws
+        - --ws.addr=0.0.0.0
+        - --ws.port=8545
+        - --ws.api=eth,net,web3,txpool
+        - --ws.origins=*
+        - --nousb
+        - --rpc.allow-unprotected-txs
+        - --cache=4096
+        - --maxpeers=100
+        - --maxpendpeers=50
+        - --txpool.lifetime=0h0m5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
